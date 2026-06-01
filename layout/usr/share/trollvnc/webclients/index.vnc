@@ -44,6 +44,50 @@
             justify-content: space-between;
             align-items: center;
         }
+        .status_left, .status_right {
+            display: flex;
+            align-items: center;
+        }
+        .port_text {
+            font-size: 11px;
+            color: #8e8e93;
+            font-weight: 600;
+        }
+        .header_stats {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .stat_badge {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #e5e5ea;
+        }
+        .color_green { color: #30d158; }
+        .color_orange { color: #ff9f0a; }
+        .color_red { color: #ff453a; }
+
+        @media (max-width: 600px) {
+            #status_bar {
+                padding: 6px 8px;
+            }
+            .header_stats {
+                gap: 5px;
+            }
+            .stat_badge {
+                padding: 2px 4px;
+                font-size: 10px;
+            }
+            .port_text {
+                display: none;
+            }
+        }
         #status_text {
             font-weight: 600;
         }
@@ -82,7 +126,7 @@
             transform: scale(0.97);
         }
 
-        /* The remote screen container */
+        /* Space for top bar */
         #screen {
             width: 100%;
             height: 100%;
@@ -90,71 +134,8 @@
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            padding-top: 36px; /* Space for top bar */
-            padding-bottom: 80px; /* Space for bottom dock */
-        }
-        #screen > canvas {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        /* System Statistics Overlay */
-        #stats_overlay {
-            position: fixed;
-            top: 50px;
-            right: 16px;
-            background: rgba(30, 30, 30, 0.55);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 16px;
-            padding: 12px 14px;
-            width: 200px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            z-index: 90;
-            pointer-events: none;
-            color: #ffffff;
-            font-size: 11px;
-            transition: opacity 0.3s ease;
-        }
-        .stat_item {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-        }
-        .stat_header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .stat_label {
-            font-weight: 700;
-            color: #a1a1a6;
-            text-transform: uppercase;
-            font-size: 9px;
-            letter-spacing: 0.5px;
-        }
-        .stat_value {
-            font-weight: 600;
-            color: #e5e5ea;
-        }
-        .stat_bar_container {
-            width: 100%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 2px;
-            overflow: hidden;
-        }
-        .stat_bar_fill {
-            height: 100%;
-            background: linear-gradient(90deg, #30d158, #34c759);
-            width: 0%;
-            transition: width 0.5s ease;
+            padding-top: 36px;
+            padding-bottom: 80px;
         }
 
         /* Premium Floating Control Dock */
@@ -374,13 +355,14 @@
         };
 
         // System stats polling loop
-        function updateBarColor(el, val) {
+        function updateBadgeColor(el, val) {
+            el.classList.remove('color_green', 'color_orange', 'color_red');
             if (val > 80) {
-                el.style.background = 'linear-gradient(90deg, #ff453a, #ff3b30)';
+                el.classList.add('color_red');
             } else if (val > 55) {
-                el.style.background = 'linear-gradient(90deg, #ff9f0a, #ff9500)';
+                el.classList.add('color_orange');
             } else {
-                el.style.background = 'linear-gradient(90deg, #30d158, #34c759)';
+                el.classList.add('color_green');
             }
         }
 
@@ -391,34 +373,33 @@
                     return res.json();
                 })
                 .then(data => {
-                    const overlay = document.getElementById('stats_overlay');
-                    overlay.style.opacity = '1';
+                    const headerStats = document.getElementById('header_stats');
+                    headerStats.style.opacity = '1';
 
                     // CPU
                     const cpu = Math.round(data.cpu || 0);
-                    document.querySelector('#stat_cpu .stat_bar_fill').style.width = cpu + '%';
-                    document.querySelector('#stat_cpu .stat_value').textContent = cpu + '%';
-                    updateBarColor(document.querySelector('#stat_cpu .stat_bar_fill'), cpu);
+                    const cpuBadge = document.getElementById('cpu_badge');
+                    cpuBadge.textContent = `CPU: ${cpu}%`;
+                    updateBadgeColor(cpuBadge, cpu);
 
                     // RAM
                     const ramUsed = (data.ram.used / (1024 * 1024 * 1024)).toFixed(1);
                     const ramTotal = (data.ram.total / (1024 * 1024 * 1024)).toFixed(1);
                     const ramPct = Math.round((data.ram.used / data.ram.total) * 100) || 0;
-                    document.querySelector('#stat_ram .stat_bar_fill').style.width = ramPct + '%';
-                    document.querySelector('#stat_ram .stat_value').textContent = `${ramUsed}/${ramTotal} GB`;
-                    updateBarColor(document.querySelector('#stat_ram .stat_bar_fill'), ramPct);
+                    const ramBadge = document.getElementById('ram_badge');
+                    ramBadge.textContent = `RAM: ${ramUsed}/${ramTotal} GB`;
+                    updateBadgeColor(ramBadge, ramPct);
 
                     // Disk
                     const diskUsed = (data.disk.used / (1024 * 1024 * 1024)).toFixed(1);
                     const diskTotal = (data.disk.total / (1024 * 1024 * 1024)).toFixed(1);
                     const diskPct = Math.round((data.disk.used / data.disk.total) * 100) || 0;
-                    document.querySelector('#stat_disk .stat_bar_fill').style.width = diskPct + '%';
-                    document.querySelector('#stat_disk .stat_value').textContent = `${diskUsed}/${diskTotal} GB`;
-                    updateBarColor(document.querySelector('#stat_disk .stat_bar_fill'), diskPct);
+                    const diskBadge = document.getElementById('disk_badge');
+                    diskBadge.textContent = `Disk: ${diskUsed}/${diskTotal} GB`;
+                    updateBadgeColor(diskBadge, diskPct);
                 })
                 .catch(() => {
-                    // Hide stats overlay if stats.js is unreachable
-                    document.getElementById('stats_overlay').style.opacity = '0';
+                    document.getElementById('header_stats').style.opacity = '0';
                 });
         }
 
@@ -428,49 +409,23 @@
 </head>
 <body>
     <div id="status_bar">
-        <div style="display: flex; align-items: center;">
+        <div class="status_left">
             <div id="status_indicator" class="vnc_icon status_disconnected"></div>
             <span id="status_text">Disconnected</span>
         </div>
-        <div style="display: flex; align-items: center;">
+        <div id="header_stats" class="header_stats">
+            <span class="stat_badge" id="cpu_badge">CPU: --</span>
+            <span class="stat_badge" id="ram_badge">RAM: --</span>
+            <span class="stat_badge" id="disk_badge">Disk: --</span>
+        </div>
+        <div class="status_right">
             <button id="connect_btn" class="status_btn" onclick="toggleConnection()">Connect</button>
-            <span style="font-size: 11px; color: #8e8e93; font-weight: 600;">PORT $PORT</span>
+            <span class="port_text">PORT $PORT</span>
         </div>
     </div>
 
     <div id="screen">
         <!-- Canvas will be dynamically generated here -->
-    </div>
-
-    <!-- stats overlay -->
-    <div id="stats_overlay" style="opacity: 0;">
-        <div class="stat_item" id="stat_cpu">
-            <div class="stat_header">
-                <span class="stat_label">CPU Load</span>
-                <span class="stat_value">0%</span>
-            </div>
-            <div class="stat_bar_container">
-                <div class="stat_bar_fill"></div>
-            </div>
-        </div>
-        <div class="stat_item" id="stat_ram">
-            <div class="stat_header">
-                <span class="stat_label">RAM Usage</span>
-                <span class="stat_value">0/0 GB</span>
-            </div>
-            <div class="stat_bar_container">
-                <div class="stat_bar_fill"></div>
-            </div>
-        </div>
-        <div class="stat_item" id="stat_disk">
-            <div class="stat_header">
-                <span class="stat_label">Disk Space</span>
-                <span class="stat_value">0/0 GB</span>
-            </div>
-            <div class="stat_bar_container">
-                <div class="stat_bar_fill"></div>
-            </div>
-        </div>
     </div>
 
     <!-- IOS Smooth Overlay Dock -->

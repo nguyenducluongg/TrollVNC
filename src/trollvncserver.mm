@@ -4706,37 +4706,32 @@ static void setupRfbHttpServer(void) {
     if (gHttpPort > 0) {
         gScreen->httpPort = gHttpPort; // enable HTTP on specified port
         gScreen->http6Port = gHttpPort;
-    } else {
-        // Fallback kích hoạt HTTP engine chạy ngầm để cổng VNC chính có thể xử lý HTTP
-        int fallbackPort = gPort + 1000;
-        if (fallbackPort > 65535)
-            fallbackPort = 5800;
-        gScreen->httpPort = fallbackPort;
-        gScreen->http6Port = fallbackPort;
-    }
-
-    if (gHttpDirOverride) {
-        // Use override absolute path
-        gScreen->httpDir = strdup(gHttpDirOverride);
-        TVLog(@"HTTP server config: port=%d, dir=%s (override), proxyConnect=YES", gScreen->httpPort, gHttpDirOverride);
-    } else {
-        // Compute httpDir relative to executable: ../share/trollvnc/webclients
-        do {
-            NSString *exe = tvExecutablePath();
-            NSString *exeDir = [exe stringByDeletingLastPathComponent];
-            NSString *webRel;
+        if (gHttpDirOverride) {
+            // Use override absolute path
+            gScreen->httpDir = strdup(gHttpDirOverride);
+            TVLog(@"HTTP server config: port=%d, dir=%s (override), proxyConnect=YES", gHttpPort, gHttpDirOverride);
+        } else {
+            // Compute httpDir relative to executable: ../share/trollvnc/webclients
+            do {
+                NSString *exe = tvExecutablePath();
+                NSString *exeDir = [exe stringByDeletingLastPathComponent];
+                NSString *webRel;
 #ifdef THEBOOTSTRAP
-            webRel = @"./webclients";
+                webRel = @"./webclients";
 #else
-            webRel = @"../share/trollvnc/webclients";
+                webRel = @"../share/trollvnc/webclients";
 #endif
-            NSString *webPath = [[exeDir stringByAppendingPathComponent:webRel] stringByStandardizingPath];
-            const char *fs = [webPath fileSystemRepresentation];
-            if (fs && *fs) {
-                gScreen->httpDir = strdup(fs);
-                TVLog(@"HTTP server config: port=%d, dir=%@, proxyConnect=YES", gScreen->httpPort, webPath);
-            }
-        } while (0);
+                NSString *webPath = [[exeDir stringByAppendingPathComponent:webRel] stringByStandardizingPath];
+                const char *fs = [webPath fileSystemRepresentation];
+                if (fs && *fs) {
+                    gScreen->httpDir = strdup(fs);
+                    TVLog(@"HTTP server config: port=%d, dir=%@, proxyConnect=YES", gHttpPort, webPath);
+                }
+            } while (0);
+        }
+    } else {
+        gScreen->httpPort = 0;   // disabled
+        gScreen->httpDir = NULL; // do not set dir to avoid default startup
     }
 
     // SSL certificate and key (optional)
@@ -4891,27 +4886,29 @@ static void getSystemRAMUsage(double *usedBytes, double *totalBytes) {
     vm_statistics64_data_t vm_stat;
     if (host_statistics64(host_port, HOST_VM_INFO64, (host_info64_t)&vm_stat, &host_size) == KERN_SUCCESS) {
         double freeMemory = (double)vm_stat.free_count * pagesize;
-        double inactiveMemory = (double)vm_stat.inactive_count * pagesize;
-        *usedBytes = (double)physicalMemory - freeMemory - inactiveMemory;
+        *usedBytes = (double)physicalMemory - freeMemory;
     } else {
         *usedBytes = 0.0;
     }
 }
 
+#include <sys/mount.h>
+
 static void getSystemDiskUsage(double *usedBytes, double *totalBytes) {
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    if ([paths count] > 0) {
-        NSString *path = [paths objectAtIndex:0];
-        NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfFileSystemForPath:path error:nil];
-        if (fileAttributes) {
-            NSNumber *totalSpace = [fileAttributes objectForKey:NSFileSystemSize];
-            NSNumber *freeSpace = [fileAttributes objectForKey:NSFileSystemFreeSize];
-            if (totalSpace && freeSpace) {
-                *totalBytes = [totalSpace doubleValue];
-                *usedBytes = *totalBytes - [freeSpace doubleValue];
-                return;
-            }
-        }
+    struct statfs buf;
+    if (statfs("/private/var", &buf) == 0) {
+        uint64_t total = (uint64_t)buf.f_blocks * buf.f_bsize;
+        uint64_t free = (uint64_t)buf.f_bavail * buf.f_bsize;
+        *totalBytes = (double)total;
+        *usedBytes = (double)(total - free);
+        return;
+    }
+    if (statfs("/", &buf) == 0) {
+        uint64_t total = (uint64_t)buf.f_blocks * buf.f_bsize;
+        uint64_t free = (uint64_t)buf.f_bavail * buf.f_bsize;
+        *totalBytes = (double)total;
+        *usedBytes = (double)(total - free);
+        return;
     }
     *usedBytes = 0.0;
     *totalBytes = 0.0;
@@ -4938,17 +4935,10 @@ static void writeStatsJson(void) {
     NSError *error = nil;
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:0 error:&error];
     if (jsonData && !error) {
-        // Ghi không atomic trước để tránh tạo file tạm trong thư mục bị giới hạn ghi
-        BOOL ok = [jsonData writeToFile:jsonPath atomically:NO];
+        NSError *writeError = nil;
+        BOOL ok = [jsonData writeToFile:jsonPath options:NSDataWritingAtomic error:&writeError];
         if (!ok) {
-            // Fallback ghi trực tiếp đè lên file stats.js bằng stdio C (yêu cầu file đã tồn tại và chmod 666)
-            FILE *f = fopen(jsonPath.fileSystemRepresentation, "w");
-            if (f) {
-                fwrite(jsonData.bytes, 1, jsonData.length, f);
-                fclose(f);
-            } else {
-                TVLog(@"Failed to write stats to %@ (both NSData and fopen failed: %s)", jsonPath, strerror(errno));
-            }
+            TVLog(@"Failed to write stats to %@: %@", jsonPath, writeError);
         }
     }
 }

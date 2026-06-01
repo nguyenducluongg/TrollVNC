@@ -180,7 +180,33 @@ NS_INLINE BOOL TVNCIsValidBindHostLiteral(NSString *host) {
 #else
     baseBundle = [NSBundle bundleForClass:[self class]];
 #endif
+    return baseBundle;
+}
 
+- (NSString *)localizedStringForKey:(NSString *)key table:(NSString *)table {
+    NSString *lang = nil;
+    CFPreferencesAppSynchronize(CFSTR("com.82flex.trollvnc"));
+    CFPropertyListRef langVal = CFPreferencesCopyAppValue(CFSTR("Language"), CFSTR("com.82flex.trollvnc"));
+    if (langVal) {
+        if (CFGetTypeID(langVal) == CFStringGetTypeID()) {
+            lang = (__bridge NSString *)langVal;
+        }
+        CFRelease(langVal);
+    }
+    NSBundle *baseBundle = self.bundle;
+    if (lang && ![lang isEqualToString:@"system"]) {
+        NSString *path = [baseBundle pathForResource:lang ofType:@"lproj"];
+        if (path) {
+            NSBundle *langBundle = [NSBundle bundleWithPath:path];
+            if (langBundle) {
+                return [langBundle localizedStringForKey:key value:key table:table];
+            }
+        }
+    }
+    return [baseBundle localizedStringForKey:key value:key table:table];
+}
+
+- (NSArray *)localizeSpecifiers:(NSArray *)specifiers {
     NSString *lang = nil;
     CFPreferencesAppSynchronize(CFSTR("com.82flex.trollvnc"));
     CFPropertyListRef langVal = CFPreferencesCopyAppValue(CFSTR("Language"), CFSTR("com.82flex.trollvnc"));
@@ -191,13 +217,58 @@ NS_INLINE BOOL TVNCIsValidBindHostLiteral(NSString *host) {
         CFRelease(langVal);
     }
     if (!lang || [lang isEqualToString:@"system"]) {
-        return baseBundle;
+        return specifiers;
     }
+    NSBundle *baseBundle = self.bundle;
     NSString *path = [baseBundle pathForResource:lang ofType:@"lproj"];
-    if (path) {
-        return [NSBundle bundleWithPath:path];
+    if (!path) {
+        return specifiers;
     }
-    return baseBundle;
+    NSBundle *langBundle = [NSBundle bundleWithPath:path];
+    if (!langBundle) {
+        return specifiers;
+    }
+
+    NSString *tableName = [self hasManagedConfiguration] ? @"ManagedRoot" : @"Root";
+
+    for (PSSpecifier *specifier in specifiers) {
+        NSString *name = specifier.name;
+        if (name && name.length > 0) {
+            specifier.name = [langBundle localizedStringForKey:name value:name table:tableName];
+        }
+
+        NSString *footerText = [specifier propertyForKey:@"footerText"];
+        if (footerText && footerText.length > 0) {
+            [specifier setProperty:[langBundle localizedStringForKey:footerText value:footerText table:tableName]
+                            forKey:@"footerText"];
+        }
+
+        NSString *placeholder = [specifier propertyForKey:@"placeholder"];
+        if (placeholder && placeholder.length > 0) {
+            [specifier setProperty:[langBundle localizedStringForKey:placeholder value:placeholder table:tableName]
+                            forKey:@"placeholder"];
+        }
+
+        NSArray *validTitles = [specifier propertyForKey:@"validTitles"];
+        if ([validTitles isKindOfClass:[NSArray class]]) {
+            NSMutableArray *translatedValidTitles = [NSMutableArray array];
+            for (NSString *title in validTitles) {
+                [translatedValidTitles addObject:[langBundle localizedStringForKey:title value:title table:tableName]];
+            }
+            [specifier setProperty:translatedValidTitles forKey:@"validTitles"];
+        }
+
+        NSArray *shortTitles = [specifier propertyForKey:@"shortTitles"];
+        if ([shortTitles isKindOfClass:[NSArray class]]) {
+            NSMutableArray *translatedShortTitles = [NSMutableArray array];
+            for (NSString *title in shortTitles) {
+                [translatedShortTitles addObject:[langBundle localizedStringForKey:title value:title table:tableName]];
+            }
+            [specifier setProperty:translatedShortTitles forKey:@"shortTitles"];
+        }
+    }
+
+    return specifiers;
 }
 
 - (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier {
@@ -248,6 +319,8 @@ NS_INLINE BOOL TVNCIsValidBindHostLiteral(NSString *host) {
         if (!specifiers) {
             specifiers = [self loadSpecifiersFromPlistName:@"Root" target:self];
         }
+
+        specifiers = (NSMutableArray<PSSpecifier *> *)[self localizeSpecifiers:specifiers];
 
         PSSpecifier *firstGroup = [specifiers firstObject];
         _firstGroupSpecifier = firstGroup;
