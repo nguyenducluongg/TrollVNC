@@ -5,6 +5,7 @@ exec 3>&1 &>/dev/null
 if [ "$DPKG_MAINTSCRIPT_ARCH" == "iphoneos-arm64" ]; then
     DPKG_ROOT="/var/jb"
 fi
+rm -f "$DPKG_ROOT/usr/share/trollvnc/webclients/stats.js" || true
 
 SERV_AGENT="$DPKG_ROOT/Library/LaunchDaemons/com.82flex.trollvnc.plist"
 
