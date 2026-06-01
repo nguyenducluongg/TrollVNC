@@ -385,7 +385,7 @@
         }
 
         function pollStats() {
-            fetch('./stats.json?t=' + Date.now())
+            fetch('./stats.js?t=' + Date.now())
                 .then(res => {
                     if (!res.ok) throw new Error();
                     return res.json();
@@ -417,7 +417,7 @@
                     updateBarColor(document.querySelector('#stat_disk .stat_bar_fill'), diskPct);
                 })
                 .catch(() => {
-                    // Hide stats overlay if stats.json is unreachable
+                    // Hide stats overlay if stats.js is unreachable
                     document.getElementById('stats_overlay').style.opacity = '0';
                 });
         }

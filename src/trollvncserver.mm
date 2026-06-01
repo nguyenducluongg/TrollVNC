@@ -4923,8 +4923,7 @@ static void writeStatsJson(void) {
     double diskUsed = 0.0, diskTotal = 0.0;
     getSystemDiskUsage(&diskUsed, &diskTotal);
 
-    NSString *jsonPath =
-        [[NSString stringWithUTF8String:gScreen->httpDir] stringByAppendingPathComponent:@"stats.json"];
+    NSString *jsonPath = [[NSString stringWithUTF8String:gScreen->httpDir] stringByAppendingPathComponent:@"stats.js"];
     NSDictionary *dict = @{
         @"cpu" : @(cpu),
         @"ram" : @{@"used" : @(ramUsed), @"total" : @(ramTotal)},
@@ -4934,7 +4933,11 @@ static void writeStatsJson(void) {
     NSError *error = nil;
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:0 error:&error];
     if (jsonData && !error) {
-        [jsonData writeToFile:jsonPath atomically:YES];
+        NSError *writeError = nil;
+        BOOL ok = [jsonData writeToFile:jsonPath options:NSDataWritingAtomic error:&writeError];
+        if (!ok) {
+            TVLog(@"Failed to write stats to %@: %@", jsonPath, writeError);
+        }
     }
 }
 
