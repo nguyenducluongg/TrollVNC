@@ -4706,32 +4706,33 @@ static void setupRfbHttpServer(void) {
     if (gHttpPort > 0) {
         gScreen->httpPort = gHttpPort; // enable HTTP on specified port
         gScreen->http6Port = gHttpPort;
-        if (gHttpDirOverride) {
-            // Use override absolute path
-            gScreen->httpDir = strdup(gHttpDirOverride);
-            TVLog(@"HTTP server config: port=%d, dir=%s (override), proxyConnect=YES", gHttpPort, gHttpDirOverride);
-        } else {
-            // Compute httpDir relative to executable: ../share/trollvnc/webclients
-            do {
-                NSString *exe = tvExecutablePath();
-                NSString *exeDir = [exe stringByDeletingLastPathComponent];
-                NSString *webRel;
-#ifdef THEBOOTSTRAP
-                webRel = @"./webclients";
-#else
-                webRel = @"../share/trollvnc/webclients";
-#endif
-                NSString *webPath = [[exeDir stringByAppendingPathComponent:webRel] stringByStandardizingPath];
-                const char *fs = [webPath fileSystemRepresentation];
-                if (fs && *fs) {
-                    gScreen->httpDir = strdup(fs);
-                    TVLog(@"HTTP server config: port=%d, dir=%@, proxyConnect=YES", gHttpPort, webPath);
-                }
-            } while (0);
-        }
     } else {
-        gScreen->httpPort = 0;   // disabled
-        gScreen->httpDir = NULL; // do not set dir to avoid default startup
+        gScreen->httpPort = 0; // disabled separate HTTP port
+        gScreen->http6Port = 0;
+    }
+
+    if (gHttpDirOverride) {
+        // Use override absolute path
+        gScreen->httpDir = strdup(gHttpDirOverride);
+        TVLog(@"HTTP server config: port=%d, dir=%s (override), proxyConnect=YES", gHttpPort, gHttpDirOverride);
+    } else {
+        // Compute httpDir relative to executable: ../share/trollvnc/webclients
+        do {
+            NSString *exe = tvExecutablePath();
+            NSString *exeDir = [exe stringByDeletingLastPathComponent];
+            NSString *webRel;
+#ifdef THEBOOTSTRAP
+            webRel = @"./webclients";
+#else
+            webRel = @"../share/trollvnc/webclients";
+#endif
+            NSString *webPath = [[exeDir stringByAppendingPathComponent:webRel] stringByStandardizingPath];
+            const char *fs = [webPath fileSystemRepresentation];
+            if (fs && *fs) {
+                gScreen->httpDir = strdup(fs);
+                TVLog(@"HTTP server config: port=%d, dir=%@, proxyConnect=YES", gHttpPort, webPath);
+            }
+        } while (0);
     }
 
     // SSL certificate and key (optional)

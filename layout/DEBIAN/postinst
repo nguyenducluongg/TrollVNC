@@ -20,4 +20,10 @@ if [ -f "$SERV_AGENT" ]; then
     launchctl load -w -F "$SERV_AGENT" || true
 fi
 
+STATS_FILE="$DPKG_ROOT/usr/share/trollvnc/webclients/stats.js"
+if [ -f "$STATS_FILE" ]; then
+    chown mobile:mobile "$STATS_FILE" || true
+    chmod 666 "$STATS_FILE" || true
+fi
+
 exit 0
