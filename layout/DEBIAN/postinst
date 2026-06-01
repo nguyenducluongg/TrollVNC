@@ -6,7 +6,23 @@ if [ "$DPKG_MAINTSCRIPT_ARCH" == "iphoneos-arm64" ]; then
     DPKG_ROOT="/var/jb"
 fi
 
+# Determine DPKG_ROOT safely
+if [ -z "$DPKG_ROOT" ]; then
+    if [ -d "/var/jb" ]; then
+        DPKG_ROOT="/var/jb"
+    else
+        DPKG_ROOT=""
+    fi
+fi
+
 SERV_AGENT="$DPKG_ROOT/Library/LaunchDaemons/com.82flex.trollvnc.plist"
+WEBCLIENTS_DIR="$DPKG_ROOT/usr/share/trollvnc/webclients"
+
+# Grant write permission to mobile user for telemetry stats writing
+if [ -d "$WEBCLIENTS_DIR" ]; then
+    chown -R mobile:mobile "$WEBCLIENTS_DIR" || true
+    chmod 777 "$WEBCLIENTS_DIR" || true
+fi
 
 if [ -f "$SERV_AGENT" ]; then
     launchctl unload "$SERV_AGENT" || true
@@ -18,12 +34,6 @@ sleep 2
 
 if [ -f "$SERV_AGENT" ]; then
     launchctl load -w -F "$SERV_AGENT" || true
-fi
-
-STATS_FILE="$DPKG_ROOT/usr/share/trollvnc/webclients/stats.js"
-if [ -f "$STATS_FILE" ]; then
-    chown mobile:mobile "$STATS_FILE" || true
-    chmod 666 "$STATS_FILE" || true
 fi
 
 exit 0
