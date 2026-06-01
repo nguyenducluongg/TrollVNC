@@ -1,45 +1,312 @@
-<!-- index.vnc - VNC viewer template page.  On any file ending in .vnc,
-     the HTTP server embedded in LibVNCServer will substitute the
-     following variables when preceded by a dollar: USER, DESKTOP, DISPLAY,
-     APPLETWIDTH, APPLETHEIGHT, WIDTH, HEIGHT, PORT, PARAMS.  Use two dollar
-     signs ($$) to get a dollar sign in the generated html. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>$USER's $DESKTOP</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1c1c1e;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
-<HTML>
-<head> 
-<TITLE>
-$USER's $DESKTOP desktop ($DISPLAY)
-</TITLE>
-</head> 
-<br/>
-This page shows how to connect to a VNC server with a web browser. The buttons below
-fire up an instance of the <a href="https://novnc.com/">noVNC</a> HTML5 viewer.
-<br/>
-<br/>
-<script language="JavaScript">
-    <!--
-    function start_novnc(do_encrypt){
-	var host = document.location.hostname;
-	// If there are at least two colons in there, it is likely an IPv6 address. Check for square brackets and add them if missing.
-	if(host.search(/^.*:.*:.*$/) != -1) {
-	   if(host.charAt(0) != "[")
-	      host = "[" + host;
-	   if(host.charAt(host.length-1) != "]")
-	      host = host + "]";
-	}
-	open("novnc/vnc.html?autoconnect=true&host=" + host + "&port=$PORT&encrypt=" + (do_encrypt ? "1" : "0"));
-    }
-    -->
-</script>
-<form name="novnc_button_form">
-  <input type="button" name="novnc_button" value="Click here to connect using noVNC" onClick='start_novnc(false)'>
-</form>
-<form name="novnc_button_form">
-  <input type="button" name="novnc_button" value="Click here to connect using noVNC using an encrypted connection" onClick='start_novnc(true)'>
-</form>
+        /* Top status bar */
+        #status_bar {
+            background: rgba(30, 30, 30, 0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: #d1d1d6;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 8px 16px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 10;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #status_text {
+            flex: 1;
+            text-align: center;
+        }
+        .vnc_icon {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        .status_connecting { background-color: #ff9f0a; }
+        .status_connected { background-color: #30d158; }
+        .status_disconnected { background-color: #ff453a; }
 
+        /* The remote screen container */
+        #screen {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding-top: 36px; /* Space for top bar */
+            padding-bottom: 80px; /* Space for bottom dock */
+        }
+        #screen > canvas {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
 
-<br/>
-<br/>
-<br/>
-<A href="https://libvnc.github.io/">LibVNCServer/LibVNCClient Homepage</A>
-</HTML>
+        /* Premium Floating Control Dock */
+        #control_dock {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 30, 30, 0.65);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 10px 18px;
+            display: flex;
+            gap: 16px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            z-index: 100;
+            pointer-events: auto;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        #control_dock:hover {
+            background: rgba(40, 40, 40, 0.75);
+            border-color: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 16px 50px rgba(0, 0, 0, 0.6);
+        }
+        
+        .dock_btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        .dock_btn:hover {
+            background: rgba(255, 255, 255, 0.18);
+            transform: scale(1.05);
+        }
+        .dock_btn:active {
+            background: rgba(255, 255, 255, 0.28);
+            transform: scale(0.95);
+        }
+        .dock_btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            margin-bottom: 2px;
+        }
+        .dock_btn span {
+            font-size: 9px;
+            font-weight: 600;
+            color: #a1a1a6;
+        }
+        .dock_btn:hover span {
+            color: #ffffff;
+        }
+
+        /* Responsive adaptations */
+        @media (max-width: 480px) {
+            #control_dock {
+                bottom: 12px;
+                padding: 8px 12px;
+                gap: 12px;
+                border-radius: 16px;
+            }
+            .dock_btn {
+                width: 42px;
+                height: 42px;
+                border-radius: 10px;
+            }
+            .dock_btn svg {
+                width: 18px;
+                height: 18px;
+            }
+            .dock_btn span {
+                font-size: 8px;
+            }
+        }
+    </style>
+
+    <script type="module" crossorigin="anonymous">
+        import RFB from './novnc/core/rfb.js';
+
+        let rfb;
+        const statusText = document.getElementById('status_text');
+        const statusIndicator = document.getElementById('status_indicator');
+
+        function updateStatus(text, stateClass) {
+            statusText.textContent = text;
+            statusIndicator.className = 'vnc_icon ' + stateClass;
+        }
+
+        function connectedToServer(e) {
+            updateStatus('Connected to $DESKTOP', 'status_connected');
+        }
+
+        function disconnectedFromServer(e) {
+            if (e.detail.clean) {
+                updateStatus('Disconnected', 'status_disconnected');
+            } else {
+                updateStatus('Disconnected: Something went wrong', 'status_disconnected');
+            }
+            // Auto reconnect after 2 seconds
+            setTimeout(connect, 2000);
+        }
+
+        function credentialsAreRequired(e) {
+            const password = prompt("VNC Password Required:");
+            rfb.sendCredentials({ password: password });
+        }
+
+        function connect() {
+            updateStatus('Connecting...', 'status_connecting');
+            
+            const host = window.location.hostname;
+            const port = "$PORT"; 
+            const password = new URLSearchParams(window.location.search).get('password') || "";
+            const path = "websockify";
+
+            let url = (window.location.protocol === "https:") ? "wss://" : "ws://";
+            url += host;
+            if (port) {
+                url += ":" + port;
+            }
+            url += "/" + path;
+
+            try {
+                if (rfb) {
+                    try { rfb.disconnect(); } catch(e) {}
+                }
+                rfb = new RFB(document.getElementById('screen'), url, { credentials: { password: password } });
+                
+                rfb.addEventListener("connect", connectedToServer);
+                rfb.addEventListener("disconnect", disconnectedFromServer);
+                rfb.addEventListener("credentialsrequired", credentialsAreRequired);
+                
+                rfb.scaleViewport = true;
+                rfb.focusOnClick = true;
+            } catch (err) {
+                updateStatus('Connection Failed', 'status_disconnected');
+                setTimeout(connect, 3000);
+            }
+        }
+
+        // Global functions for dock control buttons
+        window.sendVncHome = function() {
+            if (!rfb || rfb._rfbConnectionState !== 'connected') return;
+            rfb.sendPointerEvent(0, 0, 4); // Right click down (Home down)
+            setTimeout(() => rfb.sendPointerEvent(0, 0, 0), 100); // Up
+        };
+
+        window.sendVncPower = function() {
+            if (!rfb || rfb._rfbConnectionState !== 'connected') return;
+            rfb.sendPointerEvent(0, 0, 2); // Middle click down (Power down)
+            setTimeout(() => rfb.sendPointerEvent(0, 0, 0), 100); // Up
+        };
+
+        window.sendVncVolumeUp = function() {
+            if (!rfb || rfb._rfbConnectionState !== 'connected') return;
+            rfb.sendKey(0x1008ff13, "AudioVolumeUp", true); // Keydown VolUp
+            setTimeout(() => rfb.sendKey(0x1008ff13, "AudioVolumeUp", false), 50); // Keyup
+        };
+
+        window.sendVncVolumeDown = function() {
+            if (!rfb || rfb._rfbConnectionState !== 'connected') return;
+            rfb.sendKey(0x1008ff11, "AudioVolumeDown", true); // Keydown VolDown
+            setTimeout(() => rfb.sendKey(0x1008ff11, "AudioVolumeDown", false), 50); // Keyup
+        };
+
+        // Start connection
+        connect();
+    </script>
+</head>
+<body>
+    <div id="status_bar">
+        <div style="display: flex; align-items: center;">
+            <div id="status_indicator" class="vnc_icon status_connecting"></div>
+            <span id="status_text">Connecting...</span>
+        </div>
+        <span style="font-size: 11px; color: #8e8e93; font-weight: 600;">PORT $PORT</span>
+    </div>
+
+    <div id="screen">
+        <!-- Canvas will be dynamically generated here -->
+    </div>
+
+    <!-- IOS Smooth Overlay Dock -->
+    <div id="control_dock">
+        <!-- HOME Button -->
+        <button class="dock_btn" onclick="sendVncHome()" title="Home Button">
+            <svg viewBox="0 0 24 24">
+                <!-- Simple iOS Home Circle -->
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/>
+                <rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
+            </svg>
+            <span>Home</span>
+        </button>
+
+        <!-- POWER Button -->
+        <button class="dock_btn" onclick="sendVncPower()" title="Power / Lock">
+            <svg viewBox="0 0 24 24">
+                <!-- Power Icon -->
+                <path d="M12 2v10M16.24 7.76a6 6 0 1 1-8.48 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+            </svg>
+            <span>Lock</span>
+        </button>
+
+        <!-- VOLUME UP Button -->
+        <button class="dock_btn" onclick="sendVncVolumeUp()" title="Volume Up">
+            <svg viewBox="0 0 24 24">
+                <path d="M11 5L6 9H2v6h4l5 4V5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+            </svg>
+            <span>Vol +</span>
+        </button>
+
+        <!-- VOLUME DOWN Button -->
+        <button class="dock_btn" onclick="sendVncVolumeDown()" title="Volume Down">
+            <svg viewBox="0 0 24 24">
+                <path d="M11 5L6 9H2v6h4l5 4V5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/>
+                <path d="M15 12h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+            </svg>
+            <span>Vol -</span>
+        </button>
+    </div>
+</body>
+</html>
