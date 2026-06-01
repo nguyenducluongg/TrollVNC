@@ -230,14 +230,14 @@
         // Global functions for dock control buttons
         window.sendVncHome = function() {
             if (!rfb || rfb._rfbConnectionState !== 'connected') return;
-            rfb.sendPointerEvent(0, 0, 4); // Right click down (Home down)
-            setTimeout(() => rfb.sendPointerEvent(0, 0, 0), 100); // Up
+            rfb._sendMouse(0, 0, 4); // Right click down (Home down)
+            setTimeout(() => rfb._sendMouse(0, 0, 0), 100); // Up
         };
 
         window.sendVncPower = function() {
             if (!rfb || rfb._rfbConnectionState !== 'connected') return;
-            rfb.sendPointerEvent(0, 0, 2); // Middle click down (Power down)
-            setTimeout(() => rfb.sendPointerEvent(0, 0, 0), 100); // Up
+            rfb._sendMouse(0, 0, 2); // Middle click down (Power down)
+            setTimeout(() => rfb._sendMouse(0, 0, 0), 100); // Up
         };
 
         window.sendVncVolumeUp = function() {
