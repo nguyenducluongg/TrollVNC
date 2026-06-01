@@ -4707,14 +4707,18 @@ static void setupRfbHttpServer(void) {
         gScreen->httpPort = gHttpPort; // enable HTTP on specified port
         gScreen->http6Port = gHttpPort;
     } else {
-        gScreen->httpPort = 0; // disabled separate HTTP port
-        gScreen->http6Port = 0;
+        // Fallback kích hoạt HTTP engine chạy ngầm để cổng VNC chính có thể xử lý HTTP
+        int fallbackPort = gPort + 1000;
+        if (fallbackPort > 65535)
+            fallbackPort = 5800;
+        gScreen->httpPort = fallbackPort;
+        gScreen->http6Port = fallbackPort;
     }
 
     if (gHttpDirOverride) {
         // Use override absolute path
         gScreen->httpDir = strdup(gHttpDirOverride);
-        TVLog(@"HTTP server config: port=%d, dir=%s (override), proxyConnect=YES", gHttpPort, gHttpDirOverride);
+        TVLog(@"HTTP server config: port=%d, dir=%s (override), proxyConnect=YES", gScreen->httpPort, gHttpDirOverride);
     } else {
         // Compute httpDir relative to executable: ../share/trollvnc/webclients
         do {
@@ -4730,7 +4734,7 @@ static void setupRfbHttpServer(void) {
             const char *fs = [webPath fileSystemRepresentation];
             if (fs && *fs) {
                 gScreen->httpDir = strdup(fs);
-                TVLog(@"HTTP server config: port=%d, dir=%@, proxyConnect=YES", gHttpPort, webPath);
+                TVLog(@"HTTP server config: port=%d, dir=%@, proxyConnect=YES", gScreen->httpPort, webPath);
             }
         } while (0);
     }
@@ -4934,10 +4938,17 @@ static void writeStatsJson(void) {
     NSError *error = nil;
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:0 error:&error];
     if (jsonData && !error) {
-        NSError *writeError = nil;
-        BOOL ok = [jsonData writeToFile:jsonPath options:NSDataWritingAtomic error:&writeError];
+        // Ghi không atomic trước để tránh tạo file tạm trong thư mục bị giới hạn ghi
+        BOOL ok = [jsonData writeToFile:jsonPath atomically:NO];
         if (!ok) {
-            TVLog(@"Failed to write stats to %@: %@", jsonPath, writeError);
+            // Fallback ghi trực tiếp đè lên file stats.js bằng stdio C (yêu cầu file đã tồn tại và chmod 666)
+            FILE *f = fopen(jsonPath.fileSystemRepresentation, "w");
+            if (f) {
+                fwrite(jsonData.bytes, 1, jsonData.length, f);
+                fclose(f);
+            } else {
+                TVLog(@"Failed to write stats to %@ (both NSData and fopen failed: %s)", jsonPath, strerror(errno));
+            }
         }
     }
 }
