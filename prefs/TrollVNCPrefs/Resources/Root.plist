@@ -29,6 +29,53 @@
 			<true/>
 		</dict>
 
+		<!-- Language Selection -->
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</key>
+			<key>label</key>
+			<string>Language</string>
+			<key>footerText</key>
+			<string>Choose the display language for the settings interface.</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkListCell</string>
+			<key>defaults</key>
+			<string>com.82flex.trollvnc</string>
+			<key>key</key>
+			<string>Language</string>
+			<key>label</key>
+			<string>Language</string>
+			<key>detail</key>
+			<string>TVNCListItemsController</string>
+			<key>default</key>
+			<string>system</string>
+			<key>shortTitles</key>
+			<array>
+				<string>System</string>
+				<string>English</string>
+				<string>Tiếng Việt</string>
+				<string>简体中文</string>
+			</array>
+			<key>validTitles</key>
+			<array>
+				<string>System Default</string>
+				<string>English</string>
+				<string>Tiếng Việt</string>
+				<string>简体中文 (Chinese)</string>
+			</array>
+			<key>validValues</key>
+			<array>
+				<string>system</string>
+				<string>en</string>
+				<string>vi</string>
+				<string>zh-Hans</string>
+			</array>
+			<key>PostNotification</key>
+			<string>com.82flex.trollvnc/PrefsChanged</string>
+		</dict>
+
 		<!-- Desktop Name -->
 		<dict>
 			<key>cell</key>

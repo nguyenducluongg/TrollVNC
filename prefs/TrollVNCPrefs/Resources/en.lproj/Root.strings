@@ -234,4 +234,13 @@
 
 "When dirty rectangles exceed this count, collapse to a bounding box. Too high increases protocol overhead." = "When dirty rectangles exceed this count, collapse to a bounding box. Too high increases protocol overhead.";
 
-"To unblock previously blocked clients, restart the VNC service. The temporary block list is cleared on service restart." = "";
+"To unblock previously blocked clients, restart the VNC service. The temporary block list is cleared on service restart." = "To unblock previously blocked clients, restart the VNC service. The temporary block list is cleared on service restart.";
+
+"Language" = "Language";
+"Choose the display language for the settings interface." = "Choose the display language for the settings interface.";
+"System Default" = "System Default";
+"System" = "System";
+"English" = "English";
+"Tiếng Việt" = "Tiếng Việt";
+"简体中文 (Chinese)" = "简体中文 (Chinese)";
+"简体中文" = "简体中文";

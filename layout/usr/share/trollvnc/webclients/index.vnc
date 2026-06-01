@@ -45,12 +45,11 @@
             align-items: center;
         }
         #status_text {
-            flex: 1;
-            text-align: center;
+            font-weight: 600;
         }
         .vnc_icon {
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             display: inline-block;
             margin-right: 6px;
@@ -58,6 +57,30 @@
         .status_connecting { background-color: #ff9f0a; }
         .status_connected { background-color: #30d158; }
         .status_disconnected { background-color: #ff453a; }
+
+        .status_btn {
+            background: #30d158;
+            border: none;
+            color: #ffffff;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s ease;
+            margin-right: 12px;
+        }
+        .status_btn.connected {
+            background: #ff453a;
+        }
+        .status_btn:hover {
+            opacity: 0.9;
+            transform: scale(1.03);
+        }
+        .status_btn:active {
+            transform: scale(0.97);
+        }
 
         /* The remote screen container */
         #screen {
@@ -75,6 +98,63 @@
             max-height: 100%;
             object-fit: contain;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* System Statistics Overlay */
+        #stats_overlay {
+            position: fixed;
+            top: 50px;
+            right: 16px;
+            background: rgba(30, 30, 30, 0.55);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 12px 14px;
+            width: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 90;
+            pointer-events: none;
+            color: #ffffff;
+            font-size: 11px;
+            transition: opacity 0.3s ease;
+        }
+        .stat_item {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .stat_header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stat_label {
+            font-weight: 700;
+            color: #a1a1a6;
+            text-transform: uppercase;
+            font-size: 9px;
+            letter-spacing: 0.5px;
+        }
+        .stat_value {
+            font-weight: 600;
+            color: #e5e5ea;
+        }
+        .stat_bar_container {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .stat_bar_fill {
+            height: 100%;
+            background: linear-gradient(90deg, #30d158, #34c759);
+            width: 0%;
+            transition: width 0.5s ease;
         }
 
         /* Premium Floating Control Dock */
@@ -160,6 +240,12 @@
             .dock_btn span {
                 font-size: 8px;
             }
+            #stats_overlay {
+                width: 160px;
+                top: 45px;
+                right: 8px;
+                padding: 8px 10px;
+            }
         }
     </style>
 
@@ -169,10 +255,24 @@
         let rfb;
         const statusText = document.getElementById('status_text');
         const statusIndicator = document.getElementById('status_indicator');
+        const connectBtn = document.getElementById('connect_btn');
+        let userDisconnected = true;
 
         function updateStatus(text, stateClass) {
             statusText.textContent = text;
             statusIndicator.className = 'vnc_icon ' + stateClass;
+            
+            if (stateClass === 'status_connected') {
+                connectBtn.textContent = 'Disconnect';
+                connectBtn.classList.add('connected');
+                userDisconnected = false;
+            } else if (stateClass === 'status_disconnected') {
+                connectBtn.textContent = 'Connect';
+                connectBtn.classList.remove('connected');
+            } else {
+                connectBtn.textContent = 'Connecting...';
+                connectBtn.classList.remove('connected');
+            }
         }
 
         function connectedToServer(e) {
@@ -180,13 +280,11 @@
         }
 
         function disconnectedFromServer(e) {
-            if (e.detail.clean) {
-                updateStatus('Disconnected', 'status_disconnected');
-            } else {
-                updateStatus('Disconnected: Something went wrong', 'status_disconnected');
+            updateStatus('Disconnected', 'status_disconnected');
+            // Auto reconnect only if not manually disconnected by user
+            if (!userDisconnected) {
+                setTimeout(connect, 3000);
             }
-            // Auto reconnect after 2 seconds
-            setTimeout(connect, 2000);
         }
 
         function credentialsAreRequired(e) {
@@ -195,7 +293,11 @@
         }
 
         function connect() {
+            if (rfb && rfb._rfbConnectionState === 'connected') {
+                return;
+            }
             updateStatus('Connecting...', 'status_connecting');
+            userDisconnected = false;
             
             const host = window.location.hostname;
             const port = "$PORT"; 
@@ -223,9 +325,28 @@
                 rfb.focusOnClick = true;
             } catch (err) {
                 updateStatus('Connection Failed', 'status_disconnected');
-                setTimeout(connect, 3000);
+                if (!userDisconnected) {
+                    setTimeout(connect, 3000);
+                }
             }
         }
+
+        function disconnect() {
+            userDisconnected = true;
+            if (rfb) {
+                try { rfb.disconnect(); } catch(e) {}
+            }
+            updateStatus('Disconnected', 'status_disconnected');
+        }
+
+        // Connect/Disconnect toggle
+        window.toggleConnection = function() {
+            if (rfb && rfb._rfbConnectionState === 'connected') {
+                disconnect();
+            } else {
+                connect();
+            }
+        };
 
         // Global functions for dock control buttons
         window.sendVncHome = function() {
@@ -252,21 +373,104 @@
             setTimeout(() => rfb.sendKey(0x1008ff11, "AudioVolumeDown", false), 50); // Keyup
         };
 
-        // Start connection
-        connect();
+        // System stats polling loop
+        function updateBarColor(el, val) {
+            if (val > 80) {
+                el.style.background = 'linear-gradient(90deg, #ff453a, #ff3b30)';
+            } else if (val > 55) {
+                el.style.background = 'linear-gradient(90deg, #ff9f0a, #ff9500)';
+            } else {
+                el.style.background = 'linear-gradient(90deg, #30d158, #34c759)';
+            }
+        }
+
+        function pollStats() {
+            fetch('./stats.json?t=' + Date.now())
+                .then(res => {
+                    if (!res.ok) throw new Error();
+                    return res.json();
+                })
+                .then(data => {
+                    const overlay = document.getElementById('stats_overlay');
+                    overlay.style.opacity = '1';
+
+                    // CPU
+                    const cpu = Math.round(data.cpu || 0);
+                    document.querySelector('#stat_cpu .stat_bar_fill').style.width = cpu + '%';
+                    document.querySelector('#stat_cpu .stat_value').textContent = cpu + '%';
+                    updateBarColor(document.querySelector('#stat_cpu .stat_bar_fill'), cpu);
+
+                    // RAM
+                    const ramUsed = (data.ram.used / (1024 * 1024 * 1024)).toFixed(1);
+                    const ramTotal = (data.ram.total / (1024 * 1024 * 1024)).toFixed(1);
+                    const ramPct = Math.round((data.ram.used / data.ram.total) * 100) || 0;
+                    document.querySelector('#stat_ram .stat_bar_fill').style.width = ramPct + '%';
+                    document.querySelector('#stat_ram .stat_value').textContent = `${ramUsed}/${ramTotal} GB`;
+                    updateBarColor(document.querySelector('#stat_ram .stat_bar_fill'), ramPct);
+
+                    // Disk
+                    const diskUsed = (data.disk.used / (1024 * 1024 * 1024)).toFixed(1);
+                    const diskTotal = (data.disk.total / (1024 * 1024 * 1024)).toFixed(1);
+                    const diskPct = Math.round((data.disk.used / data.disk.total) * 100) || 0;
+                    document.querySelector('#stat_disk .stat_bar_fill').style.width = diskPct + '%';
+                    document.querySelector('#stat_disk .stat_value').textContent = `${diskUsed}/${diskTotal} GB`;
+                    updateBarColor(document.querySelector('#stat_disk .stat_bar_fill'), diskPct);
+                })
+                .catch(() => {
+                    // Hide stats overlay if stats.json is unreachable
+                    document.getElementById('stats_overlay').style.opacity = '0';
+                });
+        }
+
+        setInterval(pollStats, 2000);
+        pollStats();
     </script>
 </head>
 <body>
     <div id="status_bar">
         <div style="display: flex; align-items: center;">
-            <div id="status_indicator" class="vnc_icon status_connecting"></div>
-            <span id="status_text">Connecting...</span>
+            <div id="status_indicator" class="vnc_icon status_disconnected"></div>
+            <span id="status_text">Disconnected</span>
         </div>
-        <span style="font-size: 11px; color: #8e8e93; font-weight: 600;">PORT $PORT</span>
+        <div style="display: flex; align-items: center;">
+            <button id="connect_btn" class="status_btn" onclick="toggleConnection()">Connect</button>
+            <span style="font-size: 11px; color: #8e8e93; font-weight: 600;">PORT $PORT</span>
+        </div>
     </div>
 
     <div id="screen">
         <!-- Canvas will be dynamically generated here -->
+    </div>
+
+    <!-- stats overlay -->
+    <div id="stats_overlay" style="opacity: 0;">
+        <div class="stat_item" id="stat_cpu">
+            <div class="stat_header">
+                <span class="stat_label">CPU Load</span>
+                <span class="stat_value">0%</span>
+            </div>
+            <div class="stat_bar_container">
+                <div class="stat_bar_fill"></div>
+            </div>
+        </div>
+        <div class="stat_item" id="stat_ram">
+            <div class="stat_header">
+                <span class="stat_label">RAM Usage</span>
+                <span class="stat_value">0/0 GB</span>
+            </div>
+            <div class="stat_bar_container">
+                <div class="stat_bar_fill"></div>
+            </div>
+        </div>
+        <div class="stat_item" id="stat_disk">
+            <div class="stat_header">
+                <span class="stat_label">Disk Space</span>
+                <span class="stat_value">0/0 GB</span>
+            </div>
+            <div class="stat_bar_container">
+                <div class="stat_bar_fill"></div>
+            </div>
+        </div>
     </div>
 
     <!-- IOS Smooth Overlay Dock -->
@@ -274,7 +478,6 @@
         <!-- HOME Button -->
         <button class="dock_btn" onclick="sendVncHome()" title="Home Button">
             <svg viewBox="0 0 24 24">
-                <!-- Simple iOS Home Circle -->
                 <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/>
                 <rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="2" fill="none"/>
             </svg>
@@ -284,7 +487,6 @@
         <!-- POWER Button -->
         <button class="dock_btn" onclick="sendVncPower()" title="Power / Lock">
             <svg viewBox="0 0 24 24">
-                <!-- Power Icon -->
                 <path d="M12 2v10M16.24 7.76a6 6 0 1 1-8.48 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
             </svg>
             <span>Lock</span>

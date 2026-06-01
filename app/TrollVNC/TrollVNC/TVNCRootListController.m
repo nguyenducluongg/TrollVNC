@@ -173,16 +173,39 @@ NS_INLINE BOOL TVNCIsValidBindHostLiteral(NSString *host) {
     int _notifyToken;
 }
 
-#ifdef THEBOOTSTRAP
-@synthesize bundle = _bundle;
-
 - (NSBundle *)bundle {
-    if (!_bundle) {
-        _bundle = [NSBundle bundleWithPath:[[NSBundle mainBundle] pathForResource:@"TrollVNCPrefs" ofType:@"bundle"]];
-    }
-    return _bundle;
-}
+    NSBundle *baseBundle = nil;
+#ifdef THEBOOTSTRAP
+    baseBundle = [NSBundle bundleWithPath:[[NSBundle mainBundle] pathForResource:@"TrollVNCPrefs" ofType:@"bundle"]];
+#else
+    baseBundle = [NSBundle bundleForClass:[self class]];
 #endif
+
+    NSString *lang = nil;
+    CFPreferencesAppSynchronize(CFSTR("com.82flex.trollvnc"));
+    CFPropertyListRef langVal = CFPreferencesCopyAppValue(CFSTR("Language"), CFSTR("com.82flex.trollvnc"));
+    if (langVal) {
+        if (CFGetTypeID(langVal) == CFStringGetTypeID()) {
+            lang = (__bridge NSString *)langVal;
+        }
+        CFRelease(langVal);
+    }
+    if (!lang || [lang isEqualToString:@"system"]) {
+        return baseBundle;
+    }
+    NSString *path = [baseBundle pathForResource:lang ofType:@"lproj"];
+    if (path) {
+        return [NSBundle bundleWithPath:path];
+    }
+    return baseBundle;
+}
+
+- (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier {
+    [super setPreferenceValue:value specifier:specifier];
+    if ([[specifier propertyForKey:@"key"] isEqualToString:@"Language"]) {
+        [self reloadSpecifiers];
+    }
+}
 
 /* clangd behavior workarounds */
 #define STRINGIFY(x) #x
@@ -498,8 +521,8 @@ NS_INLINE BOOL TVNCIsValidBindHostLiteral(NSString *host) {
     if (!TVNCIsValidBindHostLiteral(bindHost)) {
         NSString *t = NSLocalizedStringFromTableInBundle(@"Invalid Bind Address", @"Localizable", self.bundle, nil);
         NSString *msg = NSLocalizedStringFromTableInBundle(
-            @"Bind address must be a valid IPv4/IPv6 literal, or empty to listen on all interfaces.",
-            @"Localizable", self.bundle, nil);
+            @"Bind address must be a valid IPv4/IPv6 literal, or empty to listen on all interfaces.", @"Localizable",
+            self.bundle, nil);
         NSString *ok = NSLocalizedStringFromTableInBundle(@"OK", @"Localizable", self.bundle, nil);
 
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:t
@@ -576,7 +599,7 @@ NS_INLINE BOOL TVNCIsValidBindHostLiteral(NSString *host) {
     [logsVC setReversed:YES];
     [logsVC setAllowDismissal:YES];
     [logsVC setAllowMultiline:YES];
-    [logsVC setAllowTrash:NO];
+    [logsVC setAllowTrash:YES];
     [logsVC setAllowSearch:YES];
     [logsVC setAllowShare:YES];
     [logsVC setPullToReload:YES];

@@ -909,8 +909,8 @@ static void parseDaemonOptions(void) {
     [cfg appendFormat:@"inflight=%d tile=%d full%%=%d rects=%d ", gMaxInflightUpdates, gTileSize,
                       gFullscreenThresholdPercent, gMaxRectsLimit];
     [cfg appendFormat:@"async=%@ cursor=%@ orient=%@ orientFix=%d keylog=%@ ", gAsyncSwapEnabled ? @"YES" : @"NO",
-                      gCursorEnabled ? @"YES" : @"NO", gOrientationSyncEnabled ? @"YES" : @"NO",
-                      gOrientationFixQuad, gKeyEventLogging ? @"YES" : @"NO"];
+                      gCursorEnabled ? @"YES" : @"NO", gOrientationSyncEnabled ? @"YES" : @"NO", gOrientationFixQuad,
+                      gKeyEventLogging ? @"YES" : @"NO"];
 
     // Wheel / input tuning
     [cfg appendFormat:@"wheel=%.1f natural=%@ mod=%s ", gWheelStepPx, gWheelNaturalDir ? @"YES" : @"NO",
@@ -4801,8 +4801,161 @@ static void tvStopRfbEventThread(void) {
     }
 }
 
+#import <mach/mach.h>
+#import <sys/mount.h>
+#import <sys/sysctl.h>
+
+static processor_info_array_t prev_cpu_info = NULL;
+static mach_msg_type_number_t prev_num_cpu_info = 0;
+static int cpu_lock = 0;
+
+static double getSystemCPUUsage(void) {
+    natural_t numCPUs = 0;
+    processor_info_array_t cpuInfo;
+    mach_msg_type_number_t numCpuInfo;
+
+    kern_return_t kr = host_processor_info(mach_host_self(), PROCESSOR_CPU_LOAD_INFO, &numCPUs, &cpuInfo, &numCpuInfo);
+    if (kr != KERN_SUCCESS) {
+        return 0.0;
+    }
+
+    while (__sync_lock_test_and_set(&cpu_lock, 1)) {
+        // Spin lock
+    }
+    if (!prev_cpu_info) {
+        prev_cpu_info = cpuInfo;
+        prev_num_cpu_info = numCpuInfo;
+        __sync_lock_release(&cpu_lock);
+        return 0.0;
+    }
+
+    unsigned long long totalUser = 0, totalSystem = 0, totalIdle = 0, totalNice = 0;
+    unsigned long long prevTotalUser = 0, prevTotalSystem = 0, prevTotalIdle = 0, prevTotalNice = 0;
+
+    for (unsigned int i = 0; i < numCPUs; i++) {
+        int user = cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_USER];
+        int system = cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_SYSTEM];
+        int idle = cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_IDLE];
+        int nice = cpuInfo[(CPU_STATE_MAX * i) + CPU_STATE_NICE];
+
+        totalUser += user;
+        totalSystem += system;
+        totalIdle += idle;
+        totalNice += nice;
+
+        int prev_user = prev_cpu_info[(CPU_STATE_MAX * i) + CPU_STATE_USER];
+        int prev_system = prev_cpu_info[(CPU_STATE_MAX * i) + CPU_STATE_SYSTEM];
+        int prev_idle = prev_cpu_info[(CPU_STATE_MAX * i) + CPU_STATE_IDLE];
+        int prev_nice = prev_cpu_info[(CPU_STATE_MAX * i) + CPU_STATE_NICE];
+
+        prevTotalUser += prev_user;
+        prevTotalSystem += prev_system;
+        prevTotalIdle += prev_idle;
+        prevTotalNice += prev_nice;
+    }
+
+    vm_deallocate(mach_task_self(), (vm_address_t)prev_cpu_info, prev_num_cpu_info * sizeof(int));
+
+    prev_cpu_info = cpuInfo;
+    prev_num_cpu_info = numCpuInfo;
+    __sync_lock_release(&cpu_lock);
+
+    double totalDiff = (double)((totalUser - prevTotalUser) + (totalSystem - prevTotalSystem) +
+                                (totalIdle - prevTotalIdle) + (totalNice - prevTotalNice));
+    if (totalDiff <= 0.0)
+        return 0.0;
+
+    double activeDiff =
+        (double)((totalUser - prevTotalUser) + (totalSystem - prevTotalSystem) + (totalNice - prevTotalNice));
+    return (activeDiff / totalDiff) * 100.0;
+}
+
+static void getSystemRAMUsage(double *usedBytes, double *totalBytes) {
+    int mib[2] = {CTL_HW, HW_MEMSIZE};
+    int64_t physicalMemory = 0;
+    size_t length = sizeof(physicalMemory);
+    sysctl(mib, 2, &physicalMemory, &length, NULL, 0);
+
+    *totalBytes = (double)physicalMemory;
+
+    mach_port_t host_port = mach_host_self();
+    mach_msg_type_number_t host_size = sizeof(vm_statistics64_data_t) / sizeof(integer_t);
+    vm_size_t pagesize;
+    host_page_size(host_port, &pagesize);
+
+    vm_statistics64_data_t vm_stat;
+    if (host_statistics64(host_port, HOST_VM_INFO64, (host_info64_t)&vm_stat, &host_size) == KERN_SUCCESS) {
+        double freeMemory = (double)vm_stat.free_count * pagesize;
+        double inactiveMemory = (double)vm_stat.inactive_count * pagesize;
+        *usedBytes = (double)physicalMemory - freeMemory - inactiveMemory;
+    } else {
+        *usedBytes = 0.0;
+    }
+}
+
+static void getSystemDiskUsage(double *usedBytes, double *totalBytes) {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    if ([paths count] > 0) {
+        NSString *path = [paths objectAtIndex:0];
+        NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfFileSystemForPath:path error:nil];
+        if (fileAttributes) {
+            NSNumber *totalSpace = [fileAttributes objectForKey:NSFileSystemSize];
+            NSNumber *freeSpace = [fileAttributes objectForKey:NSFileSystemFreeSize];
+            if (totalSpace && freeSpace) {
+                *totalBytes = [totalSpace doubleValue];
+                *usedBytes = *totalBytes - [freeSpace doubleValue];
+                return;
+            }
+        }
+    }
+    *usedBytes = 0.0;
+    *totalBytes = 0.0;
+}
+
+static void writeStatsJson(void) {
+    if (!gScreen || !gScreen->httpDir)
+        return;
+
+    double cpu = getSystemCPUUsage();
+    double ramUsed = 0.0, ramTotal = 0.0;
+    getSystemRAMUsage(&ramUsed, &ramTotal);
+
+    double diskUsed = 0.0, diskTotal = 0.0;
+    getSystemDiskUsage(&diskUsed, &diskTotal);
+
+    NSString *jsonPath =
+        [[NSString stringWithUTF8String:gScreen->httpDir] stringByAppendingPathComponent:@"stats.json"];
+    NSDictionary *dict = @{
+        @"cpu" : @(cpu),
+        @"ram" : @{@"used" : @(ramUsed), @"total" : @(ramTotal)},
+        @"disk" : @{@"used" : @(diskUsed), @"total" : @(diskTotal)}
+    };
+
+    NSError *error = nil;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:0 error:&error];
+    if (jsonData && !error) {
+        [jsonData writeToFile:jsonPath atomically:YES];
+    }
+}
+
 static void initializeAndRunRfbServer(void) {
     rfbInitServer(gScreen);
+
+    // Start systems statistics update timer
+    static dispatch_source_t statsTimer = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        dispatch_queue_t statsQueue = dispatch_queue_create("com.82flex.trollvnc.stats", DISPATCH_QUEUE_SERIAL);
+        statsTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, statsQueue);
+        dispatch_source_set_timer(statsTimer, dispatch_walltime(NULL, 0), 2 * NSEC_PER_SEC, 0.5 * NSEC_PER_SEC);
+        dispatch_source_set_event_handler(statsTimer, ^{
+            @autoreleasepool {
+                writeStatsJson();
+            }
+        });
+        dispatch_resume(statsTimer);
+    });
+
     TVLog(@"VNC server initialized on port %d, %dx%d, name '%@'", gPort, gWidth, gHeight, gDesktopName);
 
     if (isRepeaterEnabled()) {

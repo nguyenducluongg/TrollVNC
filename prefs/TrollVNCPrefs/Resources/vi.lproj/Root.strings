@@ -235,3 +235,12 @@
 "When dirty rectangles exceed this count, collapse to a bounding box. Too high increases protocol overhead." = "Khi số lượng ô thay đổi vượt quá giới hạn này, gộp chúng lại thành hộp bao quanh tổng. Đặt quá cao sẽ gây gánh nặng tải cho giao thức truyền dữ liệu.";
 
 "To unblock previously blocked clients, restart the VNC service. The temporary block list is cleared on service restart." = "Để bỏ chặn các khách đã bị chặn trước đó, hãy khởi động lại dịch vụ VNC. Danh sách chặn tạm thời sẽ tự động được xoá khi dịch vụ khởi động lại.";
+
+"Language" = "Ngôn ngữ";
+"Choose the display language for the settings interface." = "Chọn ngôn ngữ hiển thị cho giao diện cài đặt.";
+"System Default" = "Mặc định hệ thống";
+"System" = "Hệ thống";
+"English" = "English";
+"Tiếng Việt" = "Tiếng Việt";
+"简体中文 (Chinese)" = "简体中文 (Chinese)";
+"简体中文" = "简体中文";

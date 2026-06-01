@@ -256,6 +256,19 @@ int main(int argc, const char *argv[]) {
         NSString *stdoutPath = [rootPath stringByAppendingPathComponent:@"tmp/trollvnc-stdout.log"];
         NSString *stderrPath = [rootPath stringByAppendingPathComponent:@"tmp/trollvnc-stderr.log"];
 
+        // Clear log files if they exceed 5MB on manager startup to free up disk space
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        for (NSString *path in @[ stdoutPath, stderrPath ]) {
+            NSDictionary *attrs = [fileManager attributesOfItemAtPath:path error:nil];
+            if (attrs) {
+                unsigned long long fileSize = [attrs fileSize];
+                if (fileSize > 5 * 1024 * 1024) {
+                    [fileManager removeItemAtPath:path error:nil];
+                    fprintf(stderr, "Cleared log file exceeding 5MB: %s\n", [path UTF8String]);
+                }
+            }
+        }
+
         [gWatchDog setStandardOutputPath:stdoutPath];
         [gWatchDog setStandardErrorPath:stderrPath];
 
