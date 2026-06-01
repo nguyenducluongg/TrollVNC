@@ -1,0 +1,237 @@
+"/absolute/path" = "/đường/dẫn/tuyệt/đối";
+
+"/path/to/cert.pem" = "/đường/dẫn/tới/cert.pem";
+
+"/path/to/key.pem" = "/đường/dẫn/tới/key.pem";
+
+"0.1–1.0. Lower scale reduces bandwidth/CPU; 1.0 is pixel-perfect. Balance quality, latency and battery." = "0.1–1.0. Tỷ lệ thấp hơn giúp giảm băng thông và tải CPU; 1.0 sẽ cho hình ảnh sắc nét pixel-perfect. Hãy cân bằng giữa chất lượng hình ảnh, độ trễ và pin.";
+
+"180°" = "180°";
+
+"270° Clockwise" = "270° theo chiều kim đồng hồ";
+
+"8 characters max." = "Tối đa 8 ký tự.";
+
+"90° Clockwise" = "90° theo chiều kim đồng hồ";
+
+"A repeater ID is required for the “UltraVNC Repeater” mode." = "Cần nhập ID bộ lặp nếu bạn sử dụng chế độ “UltraVNC Repeater”.";
+
+"Absolute path to static web client files. Leave empty to use built-in assets." = "Đường dẫn tuyệt đối tới các tệp web tĩnh của client. Để trống để sử dụng tài nguyên mặc định.";
+
+"Advanced wheel options: comma-separated key=value (e.g. step=48,coalesce=0.03,accel=1.0). Leave empty to use defaults." = "Các tùy chọn cuộn chuột nâng cao: ngăn cách bởi dấu phẩy dạng key=value (ví dụ: step=48,coalesce=0.03,accel=1.0). Để trống để sử dụng mặc định.";
+
+"Advertises the VNC service over Bonjour (_rfb._tcp) for clients that support auto-discovery. When the built-in HTTP server is enabled, also publishes _http._tcp. Turn off to disable broadcasting." = "Quảng bá dịch vụ VNC qua Bonjour (_rfb._tcp) cho các máy khách hỗ trợ tự động tìm kiếm. Khi máy chủ HTTP tích hợp được bật, cũng sẽ quảng bá _http._tcp. Tắt đi sẽ ngừng phát tín hiệu tìm kiếm.";
+
+"Alt as Command" = "Alt thành Command";
+
+"Alt→Cmd" = "Alt→Cmd";
+
+"Apply a fixed rotation offset to the captured display. Useful for iPad models with non-standard default orientations." = "Áp dụng một góc xoay cố định cho màn hình được ghi. Hữu ích đối với các dòng iPad có hướng hiển thị mặc định không tiêu chuẩn.";
+
+"Are you sure you want to respring your device?" = "Bạn có chắc chắn muốn respring thiết bị của mình không?";
+
+"Assistive Touch Auto-Activation" = "Tự động bật Assistive Touch";
+
+"Attempts to avoid blocking when swapping buffers; may cause tearing. Can reduce stalls when encoders are slow." = "Cố gắng tránh block khi nạp buffer; có thể gây ra hiện tượng giật hình nhẹ. Giúp giảm thiểu đứng hình khi bộ mã hóa hoạt động chậm.";
+
+"Authentication" = "Xác thực";
+
+"Automatically enables iOS AssistiveTouch while clients are connected to improve input support." = "Tự động bật AssistiveTouch của iOS trong khi máy khách đang kết nối để cải thiện hỗ trợ điều khiển.";
+
+"Balance quality, latency and battery." = "Cân bằng chất lượng, độ trễ và pin.";
+
+"Bind Address" = "Địa chỉ Bind";
+
+"Bind to a specific local IP address. Leave empty to listen on all interfaces." = "Bind vào một IP nội bộ cụ thể. Để trống để lắng nghe ở tất cả giao diện mạng.";
+
+"Cancel" = "Hủy";
+
+"Choose how remote Alt/Super map to iOS Option/Command." = "Chọn cách ánh xạ phím Alt/Super từ xa thành Option/Command của iOS.";
+
+"Clipboard Sync" = "Đồng bộ Clipboard";
+
+"Coalesces updates to reduce overhead. Higher values add latency; typical range 0.005–0.030." = "Gộp các thay đổi màn hình lại để giảm tải hệ thống. Giá trị cao hơn sẽ tăng độ trễ; khoảng an toàn thông thường 0.005–0.030.";
+
+"Configure basic server options." = "Cấu hình các tùy chọn cơ bản của máy chủ.";
+
+"Configure the built-in web client server." = "Cấu hình máy chủ web client tích hợp.";
+
+"Connect/Disconnect Notifications" = "Thông báo Kết nối/Ngắt kết nối";
+
+"Cursor & Orientation" = "Con trỏ & Hướng màn hình";
+
+"Defer Window (sec)" = "Độ trễ truyền màn hình (giây)";
+
+"Desktop Name" = "Tên hiển thị (Desktop)";
+
+"Dirty Detection" = "Phát hiện thay đổi màn hình";
+
+"Dirty-detection tile size in pixels. Smaller captures finer changes but increases CPU cost." = "Kích thước ô phát hiện thay đổi tính bằng pixel. Nhỏ hơn giúp bắt các vết thay đổi chính xác hơn nhưng tốn tải CPU hơn.";
+
+"Disabled" = "Đã tắt";
+
+"Display & Performance" = "Màn hình & Hiệu năng";
+
+"e.g. 60 or 30-60 or 30:60:120" = "ví dụ: 60 hoặc 30-60 hoặc 30:60:120";
+
+"Enable Auto-Discovery" = "Bật tự động tìm kiếm (Bonjour)";
+
+"Enabled" = "Đã bật";
+
+"Establish a reverse connection to a listening VNC viewer or repeater without opening a server port. This is useful for bypassing firewalls or NAT." = "Thiết lập kết nối ngược tới một máy khách VNC đang mở hoặc bộ lặp mà không cần mở cổng máy chủ. Hữu ích đối với việc vượt qua tường lửa hoặc NAT.";
+
+"Export Certificate…" = "Xuất chứng chỉ…";
+
+"Frame Rate" = "Tốc độ khung hình (FPS)";
+
+"Full-access Password" = "Mật khẩu Toàn quyền";
+
+"Fullscreen Threshold (%)" = "Ngưỡng toàn màn hình (%)";
+
+"General" = "Cài đặt chung";
+
+"Generate CA…" = "Tạo chứng chỉ CA…";
+
+"HTTP / WebSockets" = "HTTP / WebSockets";
+
+"HTTP Document Root" = "Thư mục gốc tài nguyên HTTP";
+
+"HTTP Port" = "Cổng HTTP";
+
+"If changed tiles exceed this percent, send a full-screen update. 0 disables dirty detection (always fullscreen)." = "Nếu tỷ lệ các ô thay đổi vượt quá mức % này, máy chủ sẽ gửi bản cập nhật toàn bộ màn hình. Đặt 0 để tắt phát hiện ô thay đổi (sẽ luôn truyền toàn màn hình).";
+
+"Ignore all input from clients. Overrides per-client view-only password if set." = "Bỏ qua mọi tương tác/đi khiển từ máy khách. Tùy chọn này ghi đè các mật khẩu chỉ xem riêng lẻ.";
+
+"Keep-Alive (sec)" = "Thời gian giữ kết nối (giây)";
+
+"Keeps device awake only while at least one client is connected. 0 disables. Range 15–300 sec; shorter intervals may increase battery usage." = "Giữ thiết bị không bị ngủ chỉ khi có ít nhất một máy khách đang kết nối. Đặt 0 để tắt. Khoảng từ 15–300 giây; đặt ngắn quá có thể làm hao pin nhanh hơn.";
+
+"Leave empty for all interfaces" = "Để trống để nghe trên tất cả giao diện";
+
+"Log Keyboard Events" = "Nhật ký sự kiện bàn phím";
+
+"Logs key events to syslog for debugging. Do not leave enabled in normal use." = "Ghi nhật ký các sự kiện phím bấm vào syslog để gỡ lỗi. Vui lòng tắt tùy chọn này khi sử dụng bình thường.";
+
+"Made with ♥ by OwnGoal Studio" = "Được phát triển với ♥ bởi OwnGoal Studio";
+
+"Match iOS natural scroll direction for mouse wheel/trackpad; disable for traditional desktop direction." = "Khớp với hướng cuộn tự nhiên của iOS đối với con lăn/trackpad; tắt đi nếu bạn muốn áp dụng hướng cuộn truyền thống của máy tính bàn.";
+
+"Max concurrent client encodes before dropping new frames. 0 = never drop (may increase latency under load)." = "Số lượng luồng mã hoá đồng thời tối đa của máy khách trước khi bỏ qua các khung hình mới. Đặt 0 = không bao giờ bỏ qua (có thể làm tăng độ trễ dưới tải cao).";
+
+"Max In-flight" = "Số lượng luồng encode tối đa";
+
+"Max Rects" = "Giới hạn ô thay đổi tối đa";
+
+"Mode" = "Chế độ";
+
+"Modifier Mapping" = "Ánh xạ phím chức năng (Alt/Super)";
+
+"Name shown to VNC clients." = "Tên được hiển thị với máy khách VNC.";
+
+"Natural Scroll Direction" = "Hướng cuộn tự nhiên";
+
+"Non-blocking Swap" = "Nạp buffer không chặn (Non-blocking Swap)";
+
+"None" = "Không có";
+
+"Orientation Offset" = "Lệch góc xoay màn hình";
+
+"Output Scale" = "Tỷ lệ màn hình truyền";
+
+"PEM-encoded private key path matching the certificate." = "Đường dẫn tới file khóa riêng tư PEM tương thích với chứng chỉ.";
+
+"PEM-encoded X.509 certificate path for TLS. Used by HTTP/WebSocket if both cert and key are set." = "Đường dẫn tới chứng chỉ X.509 PEM cho TLS. Máy chủ HTTP/WebSocket sẽ sử dụng nếu cả sslcert và sslkey cùng được cấu hình.";
+
+"Pixels per wheel tick sent to clients. Higher = faster scroll." = "Số pixel tương ứng một nấc cuộn chuột gửi đến máy khách. Càng lớn thì cuộn càng nhanh.";
+
+"Please support our paid works, thank you!" = "Vui lòng ủng hộ các sản phẩm trả phí của chúng tôi, cảm ơn bạn!";
+
+"Render a cursor on the server for clients that lack a hardware cursor. May slightly reduce performance." = "Tự vẽ con trỏ trên máy chủ cho các máy khách không có chuột phần cứng. Có thể làm giảm hiệu năng hệ thống một chút.";
+
+"Repeater" = "Bộ lặp";
+
+"Repeater ID" = "ID Bộ lặp";
+
+"Reset to Defaults" = "Đặt lại về mặc định";
+
+"Respring" = "Respring";
+
+"Respring to Apply Changes" = "Respring để áp dụng thay đổi";
+
+"Reverse Connection" = "Kết nối ngược (Reverse Connection)";
+
+"Rotate the shared display to follow device orientation changes. “Orientation Offset” applies a fixed rotation for iPad models with non-standard default orientations." = "Xoay màn hình truyền theo thay đổi hướng thực tế của thiết bị. Mục “Lệch góc xoay màn hình” áp dụng thêm một góc xoay mặc định cố định cho iPad.";
+
+"Scroll & Input" = "Cuộn chuột & Điều khiển";
+
+"Serve the built-in web VNC client on this port. 0 disables." = "Bật máy chủ web client VNC tích hợp trên cổng này. Đặt 0 để tắt.";
+
+"Server" = "Máy chủ";
+
+"Server-Side Cursor" = "Vẽ con trỏ phía máy chủ";
+
+"server:port" = "server:cổng";
+
+"Set a password for view-only access (no input)." = "Đặt mật khẩu cho quyền chỉ xem (không điều khiển được).";
+
+"Set a password for view-only access (no input). Classic VNC authentication uses only the first 8 characters." = "Đặt mật khẩu cho quyền chỉ xem (không điều khiển được). Xác thực VNC cổ điển chỉ sử dụng 8 ký tự đầu tiên.";
+
+"Set a VNC password for full control. Leaving empty disables authentication (not recommended)." = "Đặt mật khẩu VNC cho quyền điều khiển hoàn toàn. Để trống sẽ tắt chế độ xác thực (không được khuyến nghị).";
+
+"Set a VNC password for full control. Leaving empty disables authentication (not recommended). Classic VNC authentication uses only the first 8 characters." = "Đặt mật khẩu VNC cho quyền điều khiển hoàn toàn. Để trống sẽ tắt chế độ xác thực (không khuyến nghị). Xác thực VNC cổ điển chỉ sử dụng 8 ký tự đầu tiên.";
+
+"Show notifications when clients connect or disconnect." = "Hiển thị thông báo khi máy khách kết nối hoặc ngắt kết nối.";
+
+"Shown to VNC clients" = "Hiển thị với máy khách VNC";
+
+"Silence Notifications" = "Tắt thông báo";
+
+"Single fps (e.g. 60), range min-max (e.g. 30-60), or full spec min:pref:max (e.g. 30:60:120). iOS 15+ uses range; iOS 14 uses preferred/max." = "Một giá trị FPS (ví dụ 60), khoảng min-max (ví dụ 30-60), hoặc cấu hình min:pref:max (ví dụ 30:60:120). iOS 15+ sử dụng khoảng; iOS 14 ưu tiên sử dụng Preferred/Max.";
+
+"SSL Certificate File" = "File chứng chỉ SSL (Cert)";
+
+"SSL Private Key File" = "File khóa riêng tư SSL (Key)";
+
+"Standard" = "Tiêu chuẩn";
+
+"Standard (Alt→Option, Super→Command)" = "Tiêu chuẩn (Alt→Option, Super→Command)";
+
+"Standard: Alt as Option, Super as Command." = "Tiêu chuẩn: phím Alt là Option, Super là Command.";
+
+"Standard: Alt as Option, Super as Command. On macOS clients, Alt as Command (altcmd) is recommended." = "Tiêu chuẩn: Alt là Option, Super là Command. Khi dùng máy khách macOS, khuyên dùng tùy chọn Alt là Command (altcmd).";
+
+"step=48,coalesce=0.03,..." = "step=48,coalesce=0.03,...";
+
+"Sync Interface Orientation" = "Đồng bộ xoay màn hình";
+
+"Syncs text clipboard with VNC clients while connected. Disable if you do not want remote clipboard access." = "Tự động đồng bộ nội dung Clipboard với máy khách VNC khi kết nối. Tắt đi nếu bạn không muốn máy khách truy cập bộ nhớ tạm thời của thiết bị.";
+
+"TCP Port" = "Cổng TCP";
+
+"This project is licensed under GPLv2. Author: Lessica." = "Dự án này được cấp phép dưới GPLv2. Tác giả: Lessica.";
+
+"Tile Size (px)" = "Khổ ô màn hình (px)";
+
+"TrollVNC" = "TrollVNC";
+
+"UltraVNC Repeater" = "UltraVNC Repeater";
+
+"View Logs" = "Xem nhật ký";
+
+"View Source Code" = "Xem mã nguồn";
+
+"View-only" = "Chỉ xem";
+
+"View-only Password" = "Mật khẩu chỉ xem";
+
+"Viewer" = "Người xem";
+
+"VNC TCP port. Default 5901. Valid range 1024–65535." = "Cổng TCP của VNC. Mặc định là 5901. Dải hợp lệ từ 1024–65535.";
+
+"Wheel Step (px)" = "Nấc cuộn chuột (px)";
+
+"Wheel Tuning" = "Tinh chỉnh con lăn chuột";
+
+"When dirty rectangles exceed this count, collapse to a bounding box. Too high increases protocol overhead." = "Khi số lượng ô thay đổi vượt quá giới hạn này, gộp chúng lại thành hộp bao quanh tổng. Đặt quá cao sẽ gây gánh nặng tải cho giao thức truyền dữ liệu.";
+
+"To unblock previously blocked clients, restart the VNC service. The temporary block list is cleared on service restart." = "Để bỏ chặn các khách đã bị chặn trước đó, hãy khởi động lại dịch vụ VNC. Danh sách chặn tạm thời sẽ tự động được xoá khi dịch vụ khởi động lại.";

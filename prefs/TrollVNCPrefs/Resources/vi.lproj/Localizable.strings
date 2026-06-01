@@ -1,0 +1,182 @@
+/* No comment provided by engineer. */
+"%@ rows not loaded" = "%@ dòng chưa được tải";
+
+/* No comment provided by engineer. */
+"A CA private key already exists. Generating new keys will overwrite the existing ones. Are you sure you want to continue?" = "Mã khóa riêng tư CA đã tồn tại. Tạo khóa mới sẽ ghi đè lên khóa hiện tại. Bạn có chắc chắn muốn tiếp tục không?";
+
+/* No comment provided by engineer. */
+"A new version %@ is available! You’re currently using v%@." = "Phiên bản mới %@ đã sẵn sàng! Bạn hiện đang sử dụng v%@.";
+
+/* No comment provided by engineer. */
+"A new version %@ is available! You’re currently using v%@. Download the latest version from Havoc Marketplace." = "Phiên bản mới %1$@ đã sẵn sàng! Bạn đang sử dụng v%2$@. Tải bản cập nhật mới nhất từ Havoc Marketplace.";
+
+/* trollvncserver */
+"A VNC client connected from %@." = "Một khách VNC đã kết nối từ %@.";
+
+/* trollvncserver */
+"A VNC client disconnected from %@." = "Một khách VNC đã ngắt kết nối từ %@.";
+
+/* No comment provided by engineer. */
+"Apply" = "Áp dụng";
+
+/* No comment provided by engineer. */
+"Apply Changes" = "Áp dụng thay đổi";
+
+/* No comment provided by engineer. */
+"Are you sure you want to reset all settings to their defaults?" = "Bạn có chắc chắn muốn đặt lại mọi cài đặt về mặc định không?";
+
+/* No comment provided by engineer. */
+"Are you sure you want to restart the VNC service?" = "Bạn có chắc chắn muốn khởi động lại dịch vụ VNC không?";
+
+/* No comment provided by engineer. */
+"Bind address must be a valid IPv4/IPv6 literal, or empty to listen on all interfaces." = "Địa chỉ IP bind phải là IPv4/IPv6 hợp lệ, hoặc để trống để lắng nghe trên tất cả giao diện mạng.";
+
+/* No comment provided by engineer. */
+"Block" = "Chặn";
+
+/* No comment provided by engineer. */
+"Block Client" = "Chặn khách";
+
+/* No comment provided by engineer. */
+"Cancel" = "Hủy";
+
+/* No comment provided by engineer. */
+"Cannot parse text with UTF-8 encoding: “%@”." = "Không thể phân tích văn bản bằng UTF-8: “%@”.";
+
+/* No comment provided by engineer. */
+"Certificate Not Found" = "Không tìm thấy chứng chỉ";
+
+/* No comment provided by engineer. */
+"Clients" = "Máy khách";
+
+/* No comment provided by engineer. */
+"Confirm" = "Xác nhận";
+
+/* No comment provided by engineer. */
+"Connected %@" = "Đã kết nối %@";
+
+/* No comment provided by engineer. */
+"Copy" = "Sao chép";
+
+/* No comment provided by engineer. */
+"Copy Host" = "Sao chép Host";
+
+/* No comment provided by engineer. */
+"Copy ID" = "Sao chép ID";
+
+/* No comment provided by engineer. */
+"Current IP Address: %@" = "Địa chỉ IP hiện tại: %@";
+
+/* No comment provided by engineer. */
+"Disconnect" = "Ngắt kết nối";
+
+/* No comment provided by engineer. */
+"Disconnect All" = "Ngắt kết nối tất cả";
+
+/* No comment provided by engineer. */
+"Disconnect Client" = "Ngắt kết nối khách";
+
+/* No comment provided by engineer. */
+"Do you want to clear this log file “%@”?" = "Bạn có muốn xóa tệp nhật ký “%@” này không?";
+
+/* No comment provided by engineer. */
+"Export Certificate…" = "Xuất chứng chỉ…";
+
+/* No comment provided by engineer. */
+"Failed to generate self-signed CA certificate." = "Tạo chứng chỉ CA tự ký thất bại.";
+
+/* No comment provided by engineer. */
+"Failed to save generated keys: %@" = "Lưu các mã khóa đã tạo thất bại: %@";
+
+/* No comment provided by engineer. */
+"Generation Failed" = "Tạo thất bại";
+
+/* No comment provided by engineer. */
+"Generation Succeeded" = "Tạo thành công";
+
+/* No comment provided by engineer. */
+"Invalid Bind Address" = "Địa chỉ Bind không hợp lệ";
+
+/* No comment provided by engineer. */
+"Invalid Port" = "Cổng không hợp lệ";
+
+/* No comment provided by engineer. */
+"Later" = "Để sau";
+
+/* No comment provided by engineer. */
+"Launching" = "Đang khởi chạy";
+
+/* No comment provided by engineer. */
+"New Version Available" = "Có phiên bản mới";
+
+/* No comment provided by engineer. */
+"No clients connected" = "Không có khách nào đang kết nối";
+
+/* No comment provided by engineer. */
+"OK" = "OK";
+
+/* No comment provided by engineer. */
+"Overwrite" = "Ghi đè";
+
+/* No comment provided by engineer. */
+"Overwrite Existing Keys" = "Ghi đè khóa hiện có";
+
+/* No comment provided by engineer. */
+"Pause Auto Update" = "Tạm dừng tự động cập nhật";
+
+/* No comment provided by engineer. */
+"Repeater" = "Bộ lặp";
+
+/* No comment provided by engineer. */
+"Reset" = "Đặt lại";
+
+/* No comment provided by engineer. */
+"Reset to Defaults" = "Đặt lại về mặc định";
+
+/* No comment provided by engineer. */
+"Restart" = "Khởi động lại";
+
+/* No comment provided by engineer. */
+"Reverse Connection: %@" = "Kết nối ngược: %@";
+
+/* No comment provided by engineer. */
+"Skip This Version" = "Bỏ qua phiên bản này";
+
+/* No comment provided by engineer. */
+"TCP/HTTP ports must be 1024..65535 (HTTP can be 0 to disable). The server will fallback to defaults." = "Cổng TCP/HTTP phải nằm trong khoảng 1024..65535 (HTTP có thể đặt 0 để tắt). Máy chủ sẽ tự dùng các cổng mặc định nếu sai.";
+
+/* No comment provided by engineer. */
+"The content of text file “%@” is empty." = "Nội dung của tệp văn bản “%@” trống.";
+
+/* No comment provided by engineer. */
+"The self-signed CA certificate and private key have been successfully generated. You need to trust this certificate in your client browser or operating system. Restart the service to apply the changes." = "Chứng chỉ CA tự ký và khóa riêng tư đã được tạo thành công. Bạn cần nhấn tin tưởng chứng chỉ này trên trình duyệt hoặc hệ điều hành của khách. Khởi động lại dịch vụ để áp dụng thay đổi.";
+
+/* trollvncserver */
+"There are %d active VNC clients." = "Có %d khách VNC đang hoạt động.";
+
+/* trollvncserver */
+"There is %d active VNC client." = "Có %d khách VNC đang hoạt động.";
+
+/* No comment provided by engineer. */
+"TrollVNC" = "TrollVNC";
+
+/* No comment provided by engineer. */
+"TrollVNC (%@) v%@" = "TrollVNC (%@) v%@";
+
+/* No comment provided by engineer. */
+"unavailable" = "không khả dụng";
+
+/* No comment provided by engineer. */
+"Upgrade Now" = "Nâng cấp ngay";
+
+/* No comment provided by engineer. */
+"View Logs" = "Xem nhật ký";
+
+/* No comment provided by engineer. */
+"View-Only" = "Chỉ xem";
+
+/* No comment provided by engineer. */
+"Viewer" = "Người xem";
+
+/* No comment provided by engineer. */
+"You need to generate a self-signed CA certificate first before exporting it." = "Bạn cần tạo chứng chỉ CA tự ký trước khi xuất nó.";
